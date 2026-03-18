@@ -95,7 +95,7 @@ public class Host {
 
                     // Debug code to check what is being sent
                     //System.out.println(sourceMac + ":" + destinationMac + ":" + sourceIP + ":" + destinationIP + ":" + sendMessage);
-                    byte[] buffer = (sourceMac + ":" + destinationMac + ":" + sourceIP + ":" + destinationIP + ":" + sendMessage).getBytes();
+                    byte[] buffer = ("1:" + sourceMac + ":" + destinationMac + ":" + sourceIP + ":" + destinationIP + ":" + sendMessage).getBytes();
                     try {
                         DatagramPacket packet = new DatagramPacket(buffer, buffer.length, InetAddress.getByName(ip), port);
                         socket.send(packet);
