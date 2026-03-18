@@ -26,31 +26,9 @@ public class Router {
                 return;
             }
 
-            // learn neighbors (IP, port) using parser
-            List<String> neighborIds = Parser.links.get(routerId);
-            Map<String, String> neighborAddresses = new HashMap<>();
-            if (neighborIds != null) {
-                for (String neighborId : neighborIds) {
-                    Device neighbor = Parser.devices.get(neighborId);
-                    if (neighbor != null) {
-                        String addr = neighbor.ip + ":" + neighbor.port;
-                        neighborAddresses.put(neighborId, addr);
-                    }
-                }
-            }
-
-            // Hard-coded forwarding table per router
-            // Format: subnet -> neighbor device ID (directly connected) or "subnet.RouterID" (next-hop)
-            Map<String, String> forwardingTable = new HashMap<>();
-            if (routerId.equals("R1")) {
-                forwardingTable.put("net1", "S1");       // directly connected via S1
-                forwardingTable.put("net2", "R2");       // directly connected via R2
-                forwardingTable.put("net3", "net2.R2");  // next-hop is R2
-            } else if (routerId.equals("R2")) {
-                forwardingTable.put("net2", "R1");       // directly connected via R1
-                forwardingTable.put("net3", "S2");       // directly connected via S2
-                forwardingTable.put("net1", "net2.R1");  // next-hop is R1
-            }
+            // Discover neighbors and forwarding table using helper methods
+            Map<String, String> neighborAddresses = getNeighborAddresses(routerId);
+            Map<String, String> forwardingTable = getForwardingTable(routerId);
 
             System.out.println("Forwarding table: " + forwardingTable);
 
@@ -71,12 +49,44 @@ public class Router {
         }
     }
 
+    // Helper method to discover neighbor addresses
+    private static Map<String, String> getNeighborAddresses(String routerId) {
+        List<String> neighborIds = Parser.links.get(routerId);
+        Map<String, String> neighborAddresses = new HashMap<>();
+        if (neighborIds != null) {
+            for (String neighborId : neighborIds) {
+                Device neighbor = Parser.devices.get(neighborId);
+                if (neighbor != null) {
+                    String addr = neighbor.ip + ":" + neighbor.port;
+                    neighborAddresses.put(neighborId, addr);
+                }
+            }
+        }
+        return neighborAddresses;
+    }
+
+    // Helper method to set up forwarding table
+    private static Map<String, String> getForwardingTable(String routerId) {
+        Map<String, String> forwardingTable = new HashMap<>();
+        if (routerId.equals("R1")) {
+            forwardingTable.put("net1", "S1");       // directly connected via S1
+            forwardingTable.put("net2", "R2");       // directly connected via R2
+            forwardingTable.put("net3", "net2.R2");  // next-hop is R2
+        } else if (routerId.equals("R2")) {
+            forwardingTable.put("net2", "R1");       // directly connected via R1
+            forwardingTable.put("net3", "S2");       // directly connected via S2
+            forwardingTable.put("net1", "net2.R1");  // next-hop is R1
+        }
+        return forwardingTable;
+    }
+
     public Router(String routerId, Map<String, String> forwardingTable, Map<String, String> neighborAddresses) {
         this.routerId = routerId;
         this.forwardingTable = forwardingTable;
         this.neighborAddresses = neighborAddresses;
     }
 
+    // Method to receive and process incoming frames
     public void receiveFrame(DatagramSocket socket) throws IOException {
         FrameParser frameParser = new FrameParser();
         byte[] buffer = new byte[1500];
@@ -95,12 +105,7 @@ public class Router {
         String msg = frameParts.get(4);
 
         // print incoming frame
-        System.out.println("\nReceived frame:");
-        System.out.println("  Source MAC: " + sourceMac);
-        System.out.println("  Dest MAC: " + destMac);
-        System.out.println("  Source IP: " + sourceIp);
-        System.out.println("  Dest IP: " + destinationIp);
-        System.out.println("  Message: " + msg);
+        printFrameInfo(sourceMac, destMac, sourceIp, destinationIp, msg);
 
         // extract subnet prefixes
         String srcSubnet = sourceIp.split("\\.")[0];
@@ -146,17 +151,32 @@ public class Router {
         }
 
         // print outgoing frame
+        printForwardingInfo(newSourceMac, newDestMac, sourceIp, destinationIp, msg, outAddress);
+        sendFrame(socket, newFrame, outAddress);
+    }
+
+    // Helper method to print frame info
+    private void printFrameInfo(String sourceMac, String destMac, String sourceIp, String destinationIp, String msg) {
+        System.out.println("\nReceived frame:");
+        System.out.println("  Source MAC: " + sourceMac);
+        System.out.println("  Dest MAC: " + destMac);
+        System.out.println("  Source IP: " + sourceIp);
+        System.out.println("  Dest IP: " + destinationIp);
+        System.out.println("  Message: " + msg);
+    }
+
+    // Helper method to print forwarding info
+    private void printForwardingInfo(String sourceMac, String destMac, String sourceIp, String destinationIp, String msg, String outAddress) {
         System.out.println("Forwarding frame:");
-        System.out.println("  Source MAC: " + newSourceMac);
-        System.out.println("  Dest MAC: " + newDestMac);
+        System.out.println("  Source MAC: " + sourceMac);
+        System.out.println("  Dest MAC: " + destMac);
         System.out.println("  Source IP: " + sourceIp);
         System.out.println("  Dest IP: " + destinationIp);
         System.out.println("  Message: " + msg);
         System.out.println("  Out to: " + outAddress);
-
-        sendFrame(socket, newFrame, outAddress);
     }
 
+    // Helper method to send frame
     public void sendFrame(DatagramSocket socket, String frame, String outPort) throws IOException {
         String[] parts = outPort.split(":");
         String ipString = parts[0];
