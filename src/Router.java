@@ -39,13 +39,12 @@ public class Router {
             while (true) {
                 try {
                     r.receiveFrame(socket);
-                } catch (Exception e) {
+                } catch (IOException e) {
                     System.err.println("Error receiving frame: " + e.getMessage());
-                    e.printStackTrace();
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Error initializing router: " + e.getMessage());
         }
     }
 
