@@ -1,28 +1,23 @@
-# CS416 Project 2:
+# CS416 Project 3:
 
-## Implementation of IP Forwarding
+## Implementation of Virtual Routing
+
 ```
 Ryan Johnson
-- Writing code for Host
+- Host binary flag
 
 Ryan Martinez & JD Otis
 - Writing code for Router
 
 Santos Pena
-- Writing config file and parser
+- Config file
 ```
+
 ---
+
 ## Attendance
+
 ```
-2/16
-- Santos absent from class
-
-2/18
-- Everyone present
-
-2/19
-- Out of class meeting: Everyone present. Demo completed during meeting
-
-2/20
-- Ryan absent from class
+3/18 (in class)
+Ryan M. absent
 ```
