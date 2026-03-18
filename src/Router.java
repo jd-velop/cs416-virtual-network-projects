@@ -7,7 +7,6 @@ import java.util.*;
 
 public class Router {
 
-    private final List<String> ports;
     private final String routerId;
     private Map<String, String> forwardingTable = new HashMap<>();
     private Map<String, String> neighborAddresses = new HashMap<>(); // deviceId -> ip:port
@@ -28,7 +27,6 @@ public class Router {
             }
 
             // learn neighbors (IP, port) using parser
-            List<String> neighborPorts = new LinkedList<>();
             List<String> neighborIds = Parser.links.get(routerId);
             Map<String, String> neighborAddresses = new HashMap<>();
             if (neighborIds != null) {
@@ -36,7 +34,6 @@ public class Router {
                     Device neighbor = Parser.devices.get(neighborId);
                     if (neighbor != null) {
                         String addr = neighbor.ip + ":" + neighbor.port;
-                        neighborPorts.add(addr);
                         neighborAddresses.put(neighborId, addr);
                     }
                 }
@@ -57,7 +54,7 @@ public class Router {
 
             System.out.println("Forwarding table: " + forwardingTable);
 
-            Router r = new Router(routerId, neighborPorts, forwardingTable, neighborAddresses);
+            Router r = new Router(routerId, forwardingTable, neighborAddresses);
             System.out.println("Router " + routerId + " running on port " + myDevice.port);
 
             DatagramSocket socket = new DatagramSocket(myDevice.port);
@@ -74,9 +71,8 @@ public class Router {
         }
     }
 
-    public Router(String routerId, List<String> ports, Map<String, String> forwardingTable, Map<String, String> neighborAddresses) {
+    public Router(String routerId, Map<String, String> forwardingTable, Map<String, String> neighborAddresses) {
         this.routerId = routerId;
-        this.ports = ports;
         this.forwardingTable = forwardingTable;
         this.neighborAddresses = neighborAddresses;
     }
