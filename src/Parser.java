@@ -39,11 +39,9 @@ public class Parser {
                 device.gateway = gateway;
             } //only for routers
             else if (id.startsWith("R")){
-                String vIp1 = lines.get(i++);
-                String vIp2 = lines.get(i++);
-                device.virtualIps.add(vIp1);
-                device.virtualIps.add(vIp2);
-
+                while (i < lines.size() && lines.get(i).startsWith("net")){
+                    device.virtualIps.add(lines.get(i++));
+                }
             }
 
             devices.put(id, device);
