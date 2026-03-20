@@ -7,12 +7,13 @@ Ryan Johnson
 - Host binary flag, router receive dv table
 
 Ryan Martinez
-- Router optimize
+- Router optimize dv table
 
 JD Otis
+- Router send dv table
 
 Santos Pena
-- Config file
+- Config file, router learns initial dv table
 ```
 
 ---
@@ -22,4 +23,9 @@ Santos Pena
 ```
 3/18 (in class)
 Ryan M. absent
+```
+
+```
+3/20 (in class)
+All present
 ```
