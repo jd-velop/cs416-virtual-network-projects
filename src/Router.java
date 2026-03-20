@@ -10,6 +10,7 @@ public class Router {
     private final String routerId;
     private Map<String, String> forwardingTable = new HashMap<>();
     private Map<String, String> neighborAddresses = new HashMap<>(); // deviceId -> ip:port
+    private Map<String, DistanceVectorEntry> distanceVector = new HashMap<>();
 
     public static void main(String[] args) {
         if (args.length != 1) {
@@ -28,6 +29,7 @@ public class Router {
 
             // Discover neighbors and forwarding table using helper methods
             Map<String, String> neighborAddresses = getNeighborAddresses(routerId);
+            System.out.println("Neighbor addresses: " + neighborAddresses);
             Map<String, String> forwardingTable = getForwardingTable(routerId);
 
             System.out.println("Forwarding table: " + forwardingTable);
@@ -62,6 +64,7 @@ public class Router {
             }
         }
         return neighborAddresses;
+
     }
 
     // Helper method to set up forwarding table
@@ -77,6 +80,17 @@ public class Router {
             forwardingTable.put("net1", "net2.R1");  // next-hop is R1
         }
         return forwardingTable;
+    }
+
+    public static class DistanceVectorEntry {
+
+        public int cost;
+        public String nextHop;
+
+        public DistanceVectorEntry(int cost, String nextHop) {
+            this.cost = cost;
+            this.nextHop = nextHop;
+        }
     }
 
     public Router(String routerId, Map<String, String> forwardingTable, Map<String, String> neighborAddresses) {

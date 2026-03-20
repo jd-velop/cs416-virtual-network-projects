@@ -4,10 +4,12 @@
 
 ```
 Ryan Johnson
-- Host binary flag
+- Host binary flag, router receive dv table
 
-Ryan Martinez & JD Otis
-- Writing code for Router
+Ryan Martinez
+- Router optimize
+
+JD Otis
 
 Santos Pena
 - Config file
