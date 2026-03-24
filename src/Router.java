@@ -30,8 +30,8 @@ public class Router {
             // Discover neighbors and forwarding table using helper methods
             Map<String, String> neighborAddresses = getNeighborAddresses(routerId);
             System.out.println("Neighbor addresses: " + neighborAddresses);
-            Map<String, String> forwardingTable = getForwardingTable(routerId);
 
+            Map<String, String> forwardingTable = getForwardingTable(routerId);
             System.out.println("Forwarding table: " + forwardingTable);
 
             Router r = new Router(routerId, forwardingTable, neighborAddresses);
@@ -65,6 +65,36 @@ public class Router {
         }
         return neighborAddresses;
 
+    }
+
+    // Helper method to send this router's distance vector table to all neighbors
+    // format: "1:<routerId>:<dest1>,<cost1>,<nextHop1>;<dest2>,<cost2>,<nextHop2>;...<destN>,<costN>,<nextHopN>"
+    public void sendDistanceVectors(DatagramSocket socket) {
+        // Build the distance vector message
+        StringBuilder message = new StringBuilder();
+        message.append("1:").append(routerId).append(":");
+        boolean first = true;
+        for (Map.Entry<String, DistanceVectorEntry> entry : distanceVector.entrySet()) {
+            if (!first) {
+                message.append(";");
+            }
+            first = false;
+            String dest = entry.getKey();
+            DistanceVectorEntry dve = entry.getValue();
+            message.append(dest).append(",").append(dve.cost).append(",").append(dve.nextHop);
+        }
+        String dvMessage = message.toString();
+
+        // Send to each neighbor
+        for (Map.Entry<String, String> neighbor : neighborAddresses.entrySet()) {
+            String outAddress = neighbor.getValue();
+            try {
+                sendFrame(socket, dvMessage, outAddress);
+                System.out.println("Sent distance vector to neighbor " + neighbor.getKey() + " at " + outAddress);
+            } catch (IOException e) {
+                System.err.println("Failed to send distance vector to neighbor " + neighbor.getKey() + ": " + e.getMessage());
+            }
+        }
     }
 
     // Helper method to set up forwarding table
