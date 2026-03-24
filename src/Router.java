@@ -111,6 +111,28 @@ public class Router {
         }
         return forwardingTable;
     }
+    private void initializeDistanceVector() {
+        Device me = Parser.devices.get(routerId);
+
+        for (String vIp : me.virtualIps) {
+            String subnet = vIp.split("\\.")[0];
+            distanceVector.put(subnet, new DistanceVectorEntry(0, routerId));
+        }
+
+        List<String> neighbors = Parser.links.get(routerId);
+
+        for (String neighborId : neighbors) {
+            Device neighbor = Parser.devices.get(neighborId);
+            if (neighborId.startsWith("R")) {
+                for (String vIp : neighbor.virtualIps) {
+                    String subnet = vIp.split("\\.")[0];
+                    if (!distanceVector.containsKey(subnet)) {
+                        distanceVector.put(subnet, new DistanceVectorEntry(1, neighborId));
+                    }
+                }
+            }
+        }
+    }
 
     public static class DistanceVectorEntry {
 
@@ -127,6 +149,8 @@ public class Router {
         this.routerId = routerId;
         this.forwardingTable = forwardingTable;
         this.neighborAddresses = neighborAddresses;
+
+        initializeDistanceVector();
     }
 
     // Method to receive and process incoming frames
