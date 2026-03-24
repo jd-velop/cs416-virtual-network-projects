@@ -162,6 +162,12 @@ public class Router {
         socket.receive(packet);
         String frame = new String(buffer).trim();
 
+        // Check if this is a distance vector update message
+        if (frame.startsWith("1:")) {
+            handleDVMessage(socket, frame);
+            return;
+        }
+
         // parse the frame
         List<String> frameParts = frameParser.parseFrame(frame);
 
@@ -241,6 +247,139 @@ public class Router {
         System.out.println("  Dest IP: " + destinationIp);
         System.out.println("  Message: " + msg);
         System.out.println("  Out to: " + outAddress);
+    }
+
+    // Handle an incoming distance vector message from a neighbor
+    private void handleDVMessage(DatagramSocket socket, String frame) {
+        // Format: "1:<senderId>:<dest1>,<cost1>,<nextHop1>;<dest2>,<cost2>,<nextHop2>;..."
+        String[] parts = frame.split(":", 3);
+        String senderId = parts[1];
+        String dvPayload = parts.length > 2 ? parts[2] : "";
+
+        Map<String, DistanceVectorEntry> neighborDV = parseDVMessage(dvPayload);
+        System.out.println("Received DV from " + senderId + ": " + neighborDV);
+
+        boolean changed = optimizeDistanceVector(senderId, neighborDV);
+
+        if (changed) {
+            System.out.println("Distance vector updated: " + distanceVector);
+            updateForwardingTable();
+            sendDistanceVectors(socket);
+        }
+    }
+
+    // Parse the payload portion of a DV message into a map
+    private Map<String, DistanceVectorEntry> parseDVMessage(String dvPayload) {
+        Map<String, DistanceVectorEntry> receivedDV = new HashMap<>();
+        if (dvPayload == null || dvPayload.isEmpty()) return receivedDV;
+
+        String[] entries = dvPayload.split(";");
+        for (String entry : entries) {
+            String[] parts = entry.split(",");
+            if (parts.length == 3) {
+                String dest = parts[0];
+                int cost = Integer.parseInt(parts[1]);
+                String nextHop = parts[2];
+                receivedDV.put(dest, new DistanceVectorEntry(cost, nextHop));
+            }
+        }
+        return receivedDV;
+    }
+
+    // Returns true if any entry was updated
+    public boolean optimizeDistanceVector(String neighborId, Map<String, DistanceVectorEntry> neighborDV) {
+        boolean changed = false;
+
+        for (Map.Entry<String, DistanceVectorEntry> entry : neighborDV.entrySet()) {
+            String dest = entry.getKey();
+            DistanceVectorEntry neighborEntry = entry.getValue();
+
+            // Cost to reach dest through this neighbor = neighbor's cost + 1 (link cost)
+            int costThroughNeighbor = neighborEntry.cost + 1;
+
+            DistanceVectorEntry currentEntry = distanceVector.get(dest);
+
+            if (currentEntry == null) {
+                // New destination discovered
+                distanceVector.put(dest, new DistanceVectorEntry(costThroughNeighbor, neighborId));
+                changed = true;
+            } else if (costThroughNeighbor < currentEntry.cost) {
+                // Found a shorter path through this neighbor
+                currentEntry.cost = costThroughNeighbor;
+                currentEntry.nextHop = neighborId;
+                changed = true;
+            } else if (currentEntry.nextHop.equals(neighborId) && costThroughNeighbor != currentEntry.cost) {
+                // The neighbor we currently route through changed its cost — update accordingly
+                currentEntry.cost = costThroughNeighbor;
+                changed = true;
+            }
+        }
+
+        return changed;
+    }
+
+    // Rebuild the forwarding table from the current distance vector
+    private void updateForwardingTable() {
+        forwardingTable.clear();
+
+        for (Map.Entry<String, DistanceVectorEntry> entry : distanceVector.entrySet()) {
+            String subnet = entry.getKey();
+            DistanceVectorEntry dve = entry.getValue();
+
+            if (dve.cost == 0) {
+                // Directly connected subnet — find the exit device (switch or router)
+                String exitDevice = findExitDevice(subnet);
+                if (exitDevice != null) {
+                    forwardingTable.put(subnet, exitDevice);
+                }
+            } else {
+                // Remote subnet — route through next-hop router
+                forwardingTable.put(subnet, "via." + dve.nextHop);
+            }
+        }
+
+        System.out.println("Updated forwarding table: " + forwardingTable);
+    }
+
+    // Find which directly connected neighbor links this router to the given subnet
+    private String findExitDevice(String subnet) {
+        List<String> neighbors = Parser.links.get(routerId);
+        if (neighbors == null) return null;
+
+        for (String neighborId : neighbors) {
+            Device neighbor = Parser.devices.get(neighborId);
+            if (neighbor == null) continue;
+
+            // Check if this neighbor has a virtual IP on the subnet
+            if (hasSubnet(neighbor, subnet)) {
+                return neighborId;
+            }
+
+            // If neighbor is a switch, check devices behind the switch
+            if (neighborId.startsWith("S")) {
+                List<String> switchNeighbors = Parser.links.get(neighborId);
+                if (switchNeighbors != null) {
+                    for (String devId : switchNeighbors) {
+                        if (devId.equals(routerId)) continue;
+                        Device dev = Parser.devices.get(devId);
+                        if (dev != null && hasSubnet(dev, subnet)) {
+                            return neighborId; // exit through the switch
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    // Check whether a device has a virtual IP on the given subnet
+    private boolean hasSubnet(Device device, String subnet) {
+        for (String vIp : device.virtualIps) {
+            if (vIp.startsWith(subnet + ".")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // Helper method to send frame
