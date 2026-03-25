@@ -31,7 +31,7 @@ public class Router {
             Map<String, String> neighborAddresses = getNeighborAddresses(routerId);
             System.out.println("Neighbor addresses: " + neighborAddresses);
 
-            Map<String, String> forwardingTable = getForwardingTable(routerId);
+            Map<String, String> forwardingTable = setUpForwardingTable(routerId);
             System.out.println("Forwarding table: " + forwardingTable);
 
             Router r = new Router(routerId, forwardingTable, neighborAddresses);
@@ -48,6 +48,24 @@ public class Router {
         } catch (IOException e) {
             System.err.println("Error initializing router: " + e.getMessage());
         }
+    }
+
+
+    // Helper method to set up initial forwarding table based on directly connected neighbors
+    private static Map<String, String> setUpForwardingTable(String routerId) {
+        Map<String, String> forwardingTable = new HashMap<>();
+        Device me = Parser.devices.get(routerId);
+
+        // Add directly connected subnets to forwarding table
+        for (String vIp : me.virtualIps) {
+            String subnet = vIp.split("\\.")[0];
+            forwardingTable.put(subnet, routerId); // directly connected
+        }
+
+        // Subnets will be dynamically learned via distance vector updates
+        // No need to manually add neighbor subnets here
+
+        return forwardingTable;
     }
 
     // Helper method to discover neighbor addresses
@@ -97,20 +115,6 @@ public class Router {
         }
     }
 
-    // Helper method to set up forwarding table
-    private static Map<String, String> getForwardingTable(String routerId) {
-        Map<String, String> forwardingTable = new HashMap<>();
-        if (routerId.equals("R1")) {
-            forwardingTable.put("net1", "S1");       // directly connected via S1
-            forwardingTable.put("net2", "R2");       // directly connected via R2
-            forwardingTable.put("net3", "net2.R2");  // next-hop is R2
-        } else if (routerId.equals("R2")) {
-            forwardingTable.put("net2", "R1");       // directly connected via R1
-            forwardingTable.put("net3", "S2");       // directly connected via S2
-            forwardingTable.put("net1", "net2.R1");  // next-hop is R1
-        }
-        return forwardingTable;
-    }
     private void initializeDistanceVector() {
         Device me = Parser.devices.get(routerId);
 
