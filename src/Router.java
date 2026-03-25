@@ -111,6 +111,7 @@ public class Router {
         }
         return forwardingTable;
     }
+
     private void initializeDistanceVector() {
         Device me = Parser.devices.get(routerId);
 
@@ -171,11 +172,11 @@ public class Router {
         // parse the frame
         List<String> frameParts = frameParser.parseFrame(frame);
 
-        String sourceMac = frameParts.get(0);
-        String destMac = frameParts.get(1);
-        String sourceIp = frameParts.get(2);
-        String destinationIp = frameParts.get(3);
-        String msg = frameParts.get(4);
+        String sourceMac = frameParts.get(1);
+        String destMac = frameParts.get(2);
+        String sourceIp = frameParts.get(3);
+        String destinationIp = frameParts.get(4);
+        String msg = frameParts.get(5);
 
         // print incoming frame
         printFrameInfo(sourceMac, destMac, sourceIp, destinationIp, msg);
@@ -271,7 +272,9 @@ public class Router {
     // Parse the payload portion of a DV message into a map
     private Map<String, DistanceVectorEntry> parseDVMessage(String dvPayload) {
         Map<String, DistanceVectorEntry> receivedDV = new HashMap<>();
-        if (dvPayload == null || dvPayload.isEmpty()) return receivedDV;
+        if (dvPayload == null || dvPayload.isEmpty()) {
+            return receivedDV;
+        }
 
         String[] entries = dvPayload.split(";");
         for (String entry : entries) {
@@ -344,11 +347,15 @@ public class Router {
     // Find which directly connected neighbor links this router to the given subnet
     private String findExitDevice(String subnet) {
         List<String> neighbors = Parser.links.get(routerId);
-        if (neighbors == null) return null;
+        if (neighbors == null) {
+            return null;
+        }
 
         for (String neighborId : neighbors) {
             Device neighbor = Parser.devices.get(neighborId);
-            if (neighbor == null) continue;
+            if (neighbor == null) {
+                continue;
+            }
 
             // Check if this neighbor has a virtual IP on the subnet
             if (hasSubnet(neighbor, subnet)) {
@@ -360,7 +367,9 @@ public class Router {
                 List<String> switchNeighbors = Parser.links.get(neighborId);
                 if (switchNeighbors != null) {
                     for (String devId : switchNeighbors) {
-                        if (devId.equals(routerId)) continue;
+                        if (devId.equals(routerId)) {
+                            continue;
+                        }
                         Device dev = Parser.devices.get(devId);
                         if (dev != null && hasSubnet(dev, subnet)) {
                             return neighborId; // exit through the switch
