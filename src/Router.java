@@ -97,21 +97,6 @@ public class Router {
         }
     }
 
-    // Helper method to set up forwarding table
-    private static Map<String, String> getForwardingTable(String routerId) {
-        Map<String, String> forwardingTable = new HashMap<>();
-        if (routerId.equals("R1")) {
-            forwardingTable.put("net1", "S1");       // directly connected via S1
-            forwardingTable.put("net2", "R2");       // directly connected via R2
-            forwardingTable.put("net3", "net2.R2");  // next-hop is R2
-        } else if (routerId.equals("R2")) {
-            forwardingTable.put("net2", "R1");       // directly connected via R1
-            forwardingTable.put("net3", "S2");       // directly connected via S2
-            forwardingTable.put("net1", "net2.R1");  // next-hop is R1
-        }
-        return forwardingTable;
-    }
-
     private void initializeDistanceVector() {
         Device me = Parser.devices.get(routerId);
 
