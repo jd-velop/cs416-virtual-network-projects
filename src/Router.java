@@ -31,7 +31,7 @@ public class Router {
             Map<String, String> neighborAddresses = getNeighborAddresses(routerId);
             System.out.println("Neighbor addresses: " + neighborAddresses);
 
-            Map<String, String> forwardingTable = getForwardingTable(routerId);
+            Map<String, String> forwardingTable = setUpForwardingTable(routerId);
             System.out.println("Forwarding table: " + forwardingTable);
 
             Router r = new Router(routerId, forwardingTable, neighborAddresses);
@@ -48,6 +48,20 @@ public class Router {
         } catch (IOException e) {
             System.err.println("Error initializing router: " + e.getMessage());
         }
+    }
+
+
+    // Helper method to set up initial forwarding table based on directly connected neighbors
+    private static Map<String, String> setUpForwardingTable(String routerId) {
+        Map<String, String> forwardingTable = new HashMap<>();
+        Device me = Parser.devices.get(routerId);
+
+        // Add directly connected subnets to forwarding table
+        for (String vIp : me.virtualIps) {
+            String subnet = vIp.split("\\.")[0];
+            forwardingTable.put(subnet, routerId); // directly connected
+        }
+        return forwardingTable;
     }
 
     // Helper method to discover neighbor addresses
