@@ -14,7 +14,7 @@ public class Switch {
         }
         String switchID = args[0];
         try {   // check that such a switch id exists in config file
-            Parser.parse("src/Config.txt");
+            Parser.parse("Config.txt");
             Device myDevice = Parser.devices.get(switchID);
             if (myDevice == null) {
                 System.out.println("Device ID " + switchID + "not found in config file");

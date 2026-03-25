@@ -38,6 +38,10 @@ public class Router {
             System.out.println("Router " + routerId + " running on port " + myDevice.port);
 
             DatagramSocket socket = new DatagramSocket(myDevice.port);
+
+            // Send initial distance vectors to neighbors so they can learn our routes
+            r.sendDistanceVectors(socket);
+
             while (true) {
                 try {
                     r.receiveFrame(socket);
