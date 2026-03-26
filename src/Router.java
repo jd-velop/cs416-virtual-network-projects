@@ -270,8 +270,9 @@ public class Router {
         if (changed) {
             System.out.println("Distance vector updated: " + distanceVector);
             updateForwardingTable();
-            sendDistanceVectors(socket);
         }
+        // Always send back our DV so late-starting neighbors can learn all routes
+        sendDistanceVectors(socket);
     }
 
     // Parse the payload portion of a DV message into a map
