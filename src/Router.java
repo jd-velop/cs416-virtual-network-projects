@@ -11,6 +11,7 @@ public class Router {
     private Map<String, String> forwardingTable = new HashMap<>();
     private Map<String, String> neighborAddresses = new HashMap<>(); // deviceId -> ip:port
     private Map<String, DistanceVectorEntry> distanceVector = new HashMap<>();
+    private Set<String> knownNeighbors = new HashSet<>(); // neighbors that have received our DV
 
     public static void main(String[] args) {
         if (args.length != 1) {
@@ -265,14 +266,21 @@ public class Router {
         Map<String, DistanceVectorEntry> neighborDV = parseDVMessage(dvPayload);
         System.out.println("Received DV from " + senderId + ": " + neighborDV);
 
+        boolean firstContact = !knownNeighbors.contains(senderId);
+        if (firstContact) {
+            knownNeighbors.add(senderId);
+        }
+
         boolean changed = optimizeDistanceVector(senderId, neighborDV);
 
         if (changed) {
             System.out.println("Distance vector updated: " + distanceVector);
             updateForwardingTable();
+            sendDistanceVectors(socket);
+        } else if (firstContact) {
+            // Reply so late-starting neighbors can learn our routes
+            sendDistanceVectors(socket);
         }
-        // Always send back our DV so late-starting neighbors can learn all routes
-        sendDistanceVectors(socket);
     }
 
     // Parse the payload portion of a DV message into a map
