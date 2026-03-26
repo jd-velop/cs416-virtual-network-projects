@@ -264,7 +264,10 @@ public class Router {
         String dvPayload = parts.length > 2 ? parts[2] : "";
 
         Map<String, DistanceVectorEntry> neighborDV = parseDVMessage(dvPayload);
-        System.out.println("Received DV from " + senderId + ": " + neighborDV);
+        System.out.println("Received DV from " + senderId + ":");
+        for (Map.Entry<String, DistanceVectorEntry> entry : neighborDV.entrySet()) {
+            System.out.println("  " + entry.getKey() + " -> cost: " + entry.getValue().cost + ", nextHop: " + entry.getValue().nextHop);
+        }
 
         boolean firstContact = !knownNeighbors.contains(senderId);
         if (firstContact) {
