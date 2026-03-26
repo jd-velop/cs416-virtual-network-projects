@@ -137,7 +137,7 @@ public class Host {
                     String msg = spliced[5];
 
                     // if the packet is not for me, print "MAC address mismatch" and continue
-                    if (!spliced[1].equalsIgnoreCase(hostID)) {
+                    if (!spliced[2].equalsIgnoreCase(hostID)) {
                         System.out.println("\nMAC address mismatch\n");
                         System.out.print("(<dest. ip>:<message>) or 'quit' to exit: ");
                         continue;
