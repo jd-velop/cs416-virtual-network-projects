@@ -156,6 +156,7 @@ public class Router {
         this.neighborAddresses = neighborAddresses;
 
         initializeDistanceVector();
+        updateForwardingTable();
     }
 
     // Method to receive and process incoming frames
