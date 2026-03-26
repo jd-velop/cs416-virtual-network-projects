@@ -219,7 +219,7 @@ public class Router {
         }
 
         // rebuild the frame with rewritten MACs
-        String newFrame = newSourceMac + ":" + newDestMac + ":" + sourceIp + ":" + destinationIp + ":" + msg;
+        String newFrame = "0:" + newSourceMac + ":" + newDestMac + ":" + sourceIp + ":" + destinationIp + ":" + msg;
 
         // resolve exit device to real ip:port
         String outAddress = neighborAddresses.get(exitDeviceId);
