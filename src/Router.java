@@ -54,7 +54,6 @@ public class Router {
         }
     }
 
-
     // Helper method to set up initial forwarding table based on directly connected neighbors
     private static Map<String, String> setUpForwardingTable(String routerId) {
         Map<String, String> forwardingTable = new HashMap<>();
@@ -107,8 +106,10 @@ public class Router {
         for (Map.Entry<String, String> neighbor : neighborAddresses.entrySet()) {
             String outAddress = neighbor.getValue();
             try {
-                sendFrame(socket, dvMessage, outAddress);
-                System.out.println("Sent distance vector to neighbor " + neighbor.getKey() + " at " + outAddress);
+                if (neighbor.getKey().startsWith("R")) {
+                    sendFrame(socket, dvMessage, outAddress);
+                    System.out.println("Sent distance vector to neighbor " + neighbor.getKey() + " at " + outAddress);
+                }
             } catch (IOException e) {
                 System.err.println("Failed to send distance vector to neighbor " + neighbor.getKey() + ": " + e.getMessage());
             }
