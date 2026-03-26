@@ -132,9 +132,9 @@ public class Host {
                     String[] spliced = received.split(":");
 
                     //I think this is the correct way to grab the message
-                    String senderIp = spliced[2];
+                    String senderIp = spliced[3];
                     // String receiverID = spliced[1];
-                    String msg = spliced[4];
+                    String msg = spliced[5];
 
                     // if the packet is not for me, print "MAC address mismatch" and continue
                     if (!spliced[1].equalsIgnoreCase(hostID)) {
