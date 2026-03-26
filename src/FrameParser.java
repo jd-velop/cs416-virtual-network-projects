@@ -14,7 +14,7 @@ public class FrameParser {
             frameParts.add(spliced[3]);
             frameParts.add(spliced[4]);
             StringBuilder userMsg = new StringBuilder();
-            for (int i = 4; i < spliced.length; i++) {
+            for (int i = 5; i < spliced.length; i++) {
                 userMsg.append(spliced[i]);
             }
             frameParts.add(userMsg.toString());
