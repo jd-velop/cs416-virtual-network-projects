@@ -68,7 +68,7 @@ public class Host {
             Scanner scanner = new Scanner(System.in);
             System.out.println("Welcome, Host " + id);
             while (true) {
-                System.out.print("(<dest. ip>:<message>) or 'quit' to exit: ");
+                System.out.print("'<destSubnet>.<destMac>:<message>' or 'quit' to exit: ");
                 String message = scanner.nextLine();
                 if (message.trim().toLowerCase().equals("quit")) {
                     System.out.println("\nShutting down device\n");
