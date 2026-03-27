@@ -30,7 +30,7 @@ public class Router {
 
             // Discover neighbors and forwarding table using helper methods
             Map<String, String> neighborAddresses = getNeighborAddresses(routerId);
-            System.out.println("Neighbor addresses: " + neighborAddresses);
+            // System.out.println("Neighbor addresses: " + neighborAddresses);
 
             Map<String, String> forwardingTable = setUpForwardingTable(routerId);
             // System.out.println("Forwarding table: " + forwardingTable);
