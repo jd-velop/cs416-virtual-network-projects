@@ -24,12 +24,20 @@ Santos Pena
 3/18 (in class)
 Ryan M. absent
 
+3/20 (in class)
+All present
+```
+```
 3/23 (in class)
 Ryan M. absent
 JD absent
-```
 
-```
-3/20 (in class)
+3/24 (outside of class)
+All present
+
+3/25 (in class)
+All present
+
+3/26 (outside of class)
 All present
 ```
