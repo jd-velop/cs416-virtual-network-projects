@@ -33,7 +33,7 @@ public class Router {
             System.out.println("Neighbor addresses: " + neighborAddresses);
 
             Map<String, String> forwardingTable = setUpForwardingTable(routerId);
-            System.out.println("Forwarding table: " + forwardingTable);
+            // System.out.println("Forwarding table: " + forwardingTable);
 
             Router r = new Router(routerId, forwardingTable, neighborAddresses);
             System.out.println("Router " + routerId + " running on port " + myDevice.port);
@@ -109,7 +109,7 @@ public class Router {
             try {
                 if (neighbor.getKey().startsWith("R")) {
                     sendFrame(socket, dvMessage, outAddress);
-                    System.out.println("Sent distance vector to neighbor " + neighbor.getKey() + " at " + outAddress);
+                    // System.out.println("Sent distance vector to neighbor " + neighbor.getKey() + " at " + outAddress);
                 }
             } catch (IOException e) {
                 System.err.println("Failed to send distance vector to neighbor " + neighbor.getKey() + ": " + e.getMessage());
@@ -264,9 +264,9 @@ public class Router {
         String dvPayload = parts.length > 2 ? parts[2] : "";
 
         Map<String, DistanceVectorEntry> neighborDV = parseDVMessage(dvPayload);
-        System.out.println("Received DV from " + senderId + ":");
+        // System.out.println("Received DV from " + senderId + ":");
         for (Map.Entry<String, DistanceVectorEntry> entry : neighborDV.entrySet()) {
-            System.out.println("  " + entry.getKey() + " -> cost: " + entry.getValue().cost + ", nextHop: " + entry.getValue().nextHop);
+            // System.out.println("  " + entry.getKey() + " -> cost: " + entry.getValue().cost + ", nextHop: " + entry.getValue().nextHop);
         }
 
         boolean firstContact = !knownNeighbors.contains(senderId);
@@ -277,7 +277,7 @@ public class Router {
         boolean changed = optimizeDistanceVector(senderId, neighborDV);
 
         if (changed) {
-            System.out.println("Distance vector updated: " + distanceVector);
+            // System.out.println("Distance vector updated: " + distanceVector);
             updateForwardingTable();
             sendDistanceVectors(socket);
         } else if (firstContact) {
@@ -358,7 +358,7 @@ public class Router {
             }
         }
 
-        System.out.println("Updated forwarding table: " + forwardingTable);
+        // System.out.println("Updated forwarding table: " + forwardingTable);
     }
 
     // Find which directly connected neighbor links this router to the given subnet
